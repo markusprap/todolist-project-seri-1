@@ -1,5 +1,9 @@
 const taskInput = document.querySelector(".task-input input");
+filters = docu
 const taskBox = document.querySelector(".task-box");
+
+let editId;
+let isEditedTask = false;
 
 // getting localstorage todo-list
 let todos = JSON.parse(localStorage.getItem("todo-list"));
@@ -17,8 +21,8 @@ function showTodo(){
                         <div class="settings">
                             <i onclick="showMenu(this)" class="uil uil-ellipsis-h"></i>
                             <ul class="task-menu">
-                                <li><i class="uil uil-pen"></i>Edit</li>
-                                <li><i class="uil uil-trash"></i>Delete</li>
+                                <li onclick="editTask(${id}, '${todo.name}')"><i class="uil uil-pen"></i>Edit</li>
+                                <li onclick="deleteTask(${id})"><i class="uil uil-trash"></i>Delete</li>
                             </ul>
                         </div>
                     </li>`;
@@ -40,6 +44,18 @@ function showMenu(selectedTask){
     })
 }
 
+function editTask(taskId, taskName){
+    editId = taskId;
+    isEditedTask = true;
+    taskInput.value = taskName;
+}
+
+function deleteTask(deleteId){
+    todos.splice(deleteId, 1);
+   localStorage.setItem("todo-list", JSON.stringify(todos));
+   showTodo();
+}
+
 function updateStatus(selectedTask) {
    let taskName = selectedTask.parentElement.lastElementChild;
    if(selectedTask.checked) {
@@ -58,12 +74,17 @@ function updateStatus(selectedTask) {
 taskInput.addEventListener("keyup", e => {
     let userTask = taskInput.value.trim();
     if(e.key == "Enter" && userTask) {
-        if(!todos){ //if todos isn't exist, pass an empty array to todos
-            todos = [];
+        if(!isEditedTask) {
+            if(!todos){ //if todos isn't exist, pass an empty array to todos
+                todos = [];  
+            } 
+            let taskInfo = {name: userTask, status: "pending"};
+            todos.push(taskInfo);
+        } else {
+            isEditedTask = false;
+            todos[editId].name = userTask;
         }
         taskInput.value = "";
-        let taskInfo = {name: userTask, status: "pending"};
-        todos.push(taskInfo);
         localStorage.setItem("todo-list", JSON.stringify(todos));
         showTodo();
     }
